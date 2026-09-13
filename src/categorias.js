@@ -49,13 +49,17 @@ export function obtenerCategoria(nombre, tipoProducto = '') {
 }
 
 export function obtenerCategorias(productos = []) {
-    const conocidas = new Map(CATEGORIAS.map(categoria => [normalizar(categoria.nombre), categoria.nombre]))
-
+    // No se muestran categorías predefinidas: sólo las que surgen de los
+    // productos que la cuenta actual puede leer.
+    const conocidas = new Map()
     productos.forEach(producto => {
-        const tipo = String(producto.TipoProducto ?? '').trim()
-        if (tipo && !conocidas.has(normalizar(tipo))) conocidas.set(normalizar(tipo), tipo)
+        const categoria = obtenerCategoria(producto.Nombre, producto.TipoProducto)
+        if (!conocidas.has(normalizar(categoria))) {
+            conocidas.set(normalizar(categoria), categoria)
+        }
     })
 
-    // Siempre existe para que los productos sin coincidencias puedan filtrarse.
-    return [...Array.from(conocidas.values()), SIN_CATEGORIA]
+    return Array.from(conocidas.values()).sort((categoriaA, categoriaB) =>
+        categoriaA.localeCompare(categoriaB, 'es', { sensitivity: 'base' })
+    )
 }

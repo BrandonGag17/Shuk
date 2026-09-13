@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Header from './Header'
 import Productos from './Productos'
@@ -13,12 +14,31 @@ import ImportarProductos from './ImportarProductos'
 import DetalleCliente from './DetalleCliente'
 import ExportarProductos from './ExportarProductos'
 import LoadingIndicator from './LoadingIndicator'
+import { supabase } from './supabaseClient'
+import Auth from './Auth'
 
 
 function App() {
+  const [session, setSession] = useState(undefined)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: sesionActual } }) => {
+      setSession(sesionActual)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, sesionActual) => {
+      setSession(sesionActual)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (session === undefined) return <LoadingIndicator />
+  if (!session) return <Auth />
+
   return (
     <BrowserRouter>
-      <Header />
+      <Header user={session.user} />
       <LoadingIndicator />
       <Routes>
         <Route path="/" element={<Productos />} />
