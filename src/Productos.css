@@ -80,7 +80,7 @@
 
 .producto-item:hover {
   border-color: var(--accent);
-  background: #1e2133;
+  background: var(--surface-raised);
 }
 
 .producto-item img {

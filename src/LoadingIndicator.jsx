@@ -6,8 +6,8 @@ function LoadingIndicator() {
 
     useEffect(() => {
         const alCambiarCarga = (evento) => setCantidad(evento.detail?.cantidad ?? 0)
-        window.addEventListener('ventasapp:carga', alCambiarCarga)
-        return () => window.removeEventListener('ventasapp:carga', alCambiarCarga)
+        window.addEventListener('shuk:carga', alCambiarCarga)
+        return () => window.removeEventListener('shuk:carga', alCambiarCarga)
     }, [])
 
     if (cantidad === 0) return null

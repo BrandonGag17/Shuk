@@ -8,7 +8,7 @@ const supabaseKey = 'sb_publishable_9DiaRN2iRgMIkv6yN2emeg_VZS2NS4x'
 let solicitudesActivas = 0
 
 function avisarCarga() {
-    window.dispatchEvent(new CustomEvent('ventasapp:carga', { detail: { cantidad: solicitudesActivas } }))
+    window.dispatchEvent(new CustomEvent('shuk:carga', { detail: { cantidad: solicitudesActivas } }))
 }
 
 async function fetchConIndicador(...args) {

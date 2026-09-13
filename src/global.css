@@ -7,23 +7,25 @@
 }
 
 :root {
-  --bg:        #0f1117;
-  --surface:   #1a1d27;
-  --border:    #2a2d3a;
-  --text:      #e8eaf0;
-  --muted:     #7a7f96;
-  --accent:    #6c8fff;
-  --accent-hover: #8ba4ff;
-  --danger:    #ff5f5f;
-  --danger-hover: #ff7a7a;
-  --success:   #4caf7d;
-  --radius:    10px;
+  --bg:        #06152e;
+  --surface:   #0b2146;
+  --surface-raised: #10305f;
+  --border:    #285b96;
+  --text:      #f5faff;
+  --muted:     #a9c7e7;
+  --accent:    #147fdf;
+  --accent-hover: #55b2ff;
+  --accent-soft: rgba(57, 157, 244, 0.17);
+  --danger:    #ff667f;
+  --danger-hover: #ff8da0;
+  --success:   #73d7ac;
+  --radius:    12px;
   --font:      'DM Sans', sans-serif;
   --mono:      'DM Mono', monospace;
 }
 
 body {
-  background: var(--bg);
+  background: radial-gradient(circle at 10% -10%, #0c4991 0, transparent 32rem), var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 15px;
@@ -74,10 +76,10 @@ p {
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, #0757b6, var(--accent));
   color: #fff;
 }
-.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:hover { background: linear-gradient(135deg, #168ce9, var(--accent-hover)); }
 
 .btn-secondary {
   background: var(--surface);
@@ -108,6 +110,7 @@ input, select {
 }
 input:focus, select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 input::placeholder { color: var(--muted); }
 select option { background: var(--surface); }
@@ -129,9 +132,9 @@ select option { background: var(--surface); }
   font-weight: 500;
   font-family: var(--mono);
 }
-.badge-activa    { background: #1a3a2a; color: var(--success); }
-.badge-modificada { background: #2a2a1a; color: #f0c040; }
-.badge-cancelada  { background: #2a1a1a; color: var(--danger); }
+.badge-activa    { background: #153a32; color: var(--success); }
+.badge-modificada { background: #3b2b18; color: #ffd07a; }
+.badge-cancelada  { background: #421d2c; color: var(--danger); }
 
 @media (max-width: 600px) {
   h2 {

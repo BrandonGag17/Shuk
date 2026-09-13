@@ -154,3 +154,17 @@
     flex-direction: column;
   }
 }
+
+.venta-total-previo {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(20, 127, 223, .28), rgba(85, 178, 255, .1));
+  border: 1px solid rgba(85, 178, 255, .52);
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 15px 16px;
+}
+
+.venta-total-previo span { color: var(--muted); font-size: 14px; }
+.venta-total-previo strong { color: var(--text); font-family: var(--mono); font-size: 20px; }

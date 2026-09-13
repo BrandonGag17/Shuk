@@ -166,6 +166,11 @@ function CrearVenta() {
         navigate('/')
     }
 
+    const totalVenta = renglones.reduce(
+        (total, renglon) => total + renglon.cantidad * renglon.precioFinal,
+        0
+    )
+
     return (
         <div className="crear-venta-page">
             <h2>Nueva venta</h2>
@@ -249,6 +254,11 @@ function CrearVenta() {
                         ))}
                     </div>
                 )}
+
+                <div className="venta-total-previo" aria-live="polite">
+                    <span>Total de la venta</span>
+                    <strong>${totalVenta.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                </div>
             </div>
 
             <button className="btn-finalizar" onClick={agregarVenta}>Finalizar Venta</button>
