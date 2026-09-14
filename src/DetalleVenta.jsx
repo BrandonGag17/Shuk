@@ -68,7 +68,13 @@ function DetalleVenta() {
                 precioVenta: Number(detalle.PrecioVentaUnitario)
             }))
         })
-        if (error) return alert(error.message || 'No se pudo actualizar la venta')
+        if (error) {
+            console.error('Error al actualizar la venta:', error)
+            if (error.code === 'PGRST202' && error.message?.includes('actualizar_venta_fifo')) {
+                return alert('La edición de ventas todavía no está habilitada en la base de datos. Aplicá la migración 20260914_reparar_rpc_actualizar_venta.sql en Supabase y volvé a intentar.')
+            }
+            return alert(error.message || 'No se pudo actualizar la venta')
+        }
         alert('Venta actualizada')
         setEditando(false)
         traerVenta()
