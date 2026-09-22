@@ -79,17 +79,6 @@ function DetalleProducto() {
         const confirmar = window.confirm(`¿Seguro que querés eliminar ${producto.Nombre}?`)
         if (!confirmar) return
 
-        // verificamos si tiene ventas asociadas
-        const { data: detalles } = await supabase
-            .from('DetalleVentas')
-            .select('idDetalle')
-            .eq('idProducto', id)
-
-        if (detalles && detalles.length > 0) {
-            alert("No podés eliminar este producto porque tiene ventas registradas.")
-            return
-        }
-
         const { error } = await supabase
             .from('Productos')
             .delete()
