@@ -14,6 +14,7 @@ function CrearProducto() {
     const [TipoProducto, setTipo] = useState('')
     const [ImagenUrl, setImagenUrl] = useState('')
     const [guardando, setGuardando] = useState(false)
+    const [stock, setStock] = useState(0)
 
     function normalizar(texto) {
         return String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleLowerCase('es')
@@ -74,7 +75,8 @@ function CrearProducto() {
             PrecioVenta: precioVenta,
             NombreProveedor: NombreProveedor.trim(),
             TipoProducto: TipoProducto.trim(),
-            ImagenUrl: ImagenUrl.trim()
+            ImagenUrl: ImagenUrl.trim(),
+            Stock: stock
         }
 
         agregarProducto(producto)
@@ -113,6 +115,10 @@ function CrearProducto() {
                 <div className="form-campo">
                     <label className="form-label">URL de imagen</label>
                     <input placeholder="https://..." onChange={(e) => setImagenUrl(e.target.value)} />
+                </div>
+                <div className="form-campo">
+                    <label className="form-label">Stock</label>
+                    <input placeholder="0" type="number" min="0" onChange={(e) => setStock(parseInt(e.target.value) || 0)} />
                 </div>
             </div>
 
