@@ -151,8 +151,31 @@ function CrearVenta() {
         if (!clienteSeleccionado) return alert("Seleccioná un cliente")
         if (renglones.length === 0) return alert("Agregá al menos un producto")
 
+        // El mismo producto puede figurar más de una vez con precios distintos.
+        // Para validar el stock se considera su cantidad total en la venta.
+        const cantidadesPorProducto = renglones.reduce((cantidades, renglon) => {
+            const idProducto = renglon.producto.idProducto
+            cantidades.set(idProducto, (cantidades.get(idProducto) ?? 0) + renglon.cantidad)
+            return cantidades
+        }, new Map())
+        const productosSinStock = [...cantidadesPorProducto.entries()]
+            .filter(([idProducto, cantidadSolicitada]) => {
+                const producto = productos.find(item => item.idProducto === idProducto)
+                return cantidadSolicitada > Number(producto?.Stock ?? 0)
+            })
+            .map(([idProducto]) => productos.find(item => item.idProducto === idProducto)?.Nombre ?? 'un producto')
+
+        let permitirSinStock = false
+        if (productosSinStock.length > 0) {
+            permitirSinStock = window.confirm(
+                `La venta contiene ${productosSinStock.join(', ')}, el cual no tiene la cantidad de stock necesaria. ¿Desea crear la venta de igual forma?`
+            )
+            if (!permitirSinStock) return
+        }
+
         const { error } = await supabase.rpc('registrar_venta_fifo', {
             p_id_cliente: clienteSeleccionado.idCliente,
+            p_permitir_sin_stock: permitirSinStock,
             p_renglones: renglones.map(renglon => ({
                 idProducto: renglon.producto.idProducto,
                 cantidad: renglon.cantidad,

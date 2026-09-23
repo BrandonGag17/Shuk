@@ -136,6 +136,33 @@ function Ganancias() {
             return
         }
 
+        // Las ventas previas a FIFO no tienen un consumo guardado. Su costo se
+        // reconstruye desde el primer lote, no desde el precio actual.
+        const idsProductosSinConsumo = [...new Set(
+            data
+                .filter(detalle => !detalle.ConsumosLote?.length && detalle.Productos?.idProducto != null)
+                .map(detalle => detalle.Productos.idProducto)
+        )]
+        const costoPrimerLote = new Map()
+        if (idsProductosSinConsumo.length > 0) {
+            const { data: lotes, error: errorLotes } = await supabase
+                .from('LotesStock')
+                .select('idProducto, PrecioCompra, fechaIngreso, idLote')
+                .in('idProducto', idsProductosSinConsumo)
+                .order('fechaIngreso', { ascending: true })
+                .order('idLote', { ascending: true })
+
+            if (errorLotes) {
+                console.error('No se pudieron obtener los lotes para ganancias:', errorLotes)
+            } else {
+                lotes.forEach(lote => {
+                    if (!costoPrimerLote.has(lote.idProducto)) {
+                        costoPrimerLote.set(lote.idProducto, Number(lote.PrecioCompra ?? 0))
+                    }
+                })
+            }
+        }
+
         let ingresos = 0
         let costos = 0
         const gananciasPorProducto = new Map()
@@ -147,7 +174,7 @@ function Ganancias() {
             // anteriores a FIFO se conserva el costo histórico disponible.
             const costo = detalle.ConsumosLote?.length
                 ? detalle.ConsumosLote.reduce((total, consumo) => total + Number(consumo.Cantidad) * Number(consumo.CostoUnitario), 0)
-                : Number(detalle.Productos?.PrecioCompra ?? 0) * cantidad
+                : (costoPrimerLote.get(detalle.Productos?.idProducto) ?? Number(detalle.Productos?.PrecioCompra ?? 0)) * cantidad
             const idProducto = detalle.Productos?.idProducto ?? 'sin-producto'
 
             ingresos += ingreso
