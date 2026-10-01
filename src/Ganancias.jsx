@@ -8,6 +8,24 @@ function fechaLocalAISO(fecha, diasAdicionales = 0) {
     return new Date(anio, mes - 1, dia + diasAdicionales).toISOString()
 }
 
+// PostgREST devuelve como máximo 1.000 filas por consulta. Las ganancias no
+// pueden calcularse sólo con la primera página, porque las ventas más nuevas
+// quedarían afuera cuando el período tiene muchos renglones.
+async function obtenerTodosLosDetalles(consultaBase) {
+    const DETALLES_POR_PAGINA = 1000
+    const detalles = []
+    let desde = 0
+
+    while (true) {
+        const { data, error } = await consultaBase.range(desde, desde + DETALLES_POR_PAGINA - 1)
+        if (error) return { data: null, error }
+
+        detalles.push(...data)
+        if (data.length < DETALLES_POR_PAGINA) return { data: detalles, error: null }
+        desde += DETALLES_POR_PAGINA
+    }
+}
+
 function Ganancias() {
 
     const PRODUCTOS_POR_PAGINA = 1000
@@ -128,7 +146,7 @@ function Ganancias() {
             consulta = consulta.in('Ventas.idCliente', clientesSeleccionados)
         }
 
-        const { data, error } = await consulta
+        const { data, error } = await obtenerTodosLosDetalles(consulta)
 
         if (error || !data) {
             setCargandoGanancias(false)
