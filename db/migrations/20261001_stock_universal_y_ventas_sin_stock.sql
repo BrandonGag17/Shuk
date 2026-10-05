@@ -39,7 +39,7 @@ drop function if exists public.registrar_venta_fifo(bigint, jsonb, boolean);
 create function public.registrar_venta_fifo(
   p_id_cliente bigint,
   p_renglones jsonb,
-  p_permitir_sin_stock boolean default false
+  p_permitir_sin_stock boolean default true
 )
 returns bigint language plpgsql security definer set search_path = public as $$
 declare

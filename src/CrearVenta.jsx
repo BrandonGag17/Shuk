@@ -18,6 +18,7 @@ function CrearVenta() {
     const [cantidad, setCantidad] = useState('')
     const [renglones, setRenglones] = useState([])
     const [indiceEnEdicion, setIndiceEnEdicion] = useState(null)
+    const [productosSinStockPendientes, setProductosSinStockPendientes] = useState([])
     const buscadorRef = useRef(null)
 
     function normalizarNombreParaOrden(nombre) {
@@ -151,13 +152,12 @@ function CrearVenta() {
         if (!clienteSeleccionado) return alert("Seleccioná un cliente")
         if (renglones.length === 0) return alert("Agregá al menos un producto")
 
-        // El mismo producto puede figurar más de una vez con precios distintos.
-        // Para validar el stock se considera su cantidad total en la venta.
         const cantidadesPorProducto = renglones.reduce((cantidades, renglon) => {
             const idProducto = renglon.producto.idProducto
             cantidades.set(idProducto, (cantidades.get(idProducto) ?? 0) + renglon.cantidad)
             return cantidades
         }, new Map())
+
         const productosSinStock = [...cantidadesPorProducto.entries()]
             .filter(([idProducto, cantidadSolicitada]) => {
                 const producto = productos.find(item => item.idProducto === idProducto)
@@ -165,17 +165,19 @@ function CrearVenta() {
             })
             .map(([idProducto]) => productos.find(item => item.idProducto === idProducto)?.Nombre ?? 'un producto')
 
-        let permitirSinStock = false
         if (productosSinStock.length > 0) {
-            permitirSinStock = window.confirm(
-                `La venta contiene ${productosSinStock.join(', ')}, el cual no tiene la cantidad de stock necesaria. ¿Desea crear la venta de igual forma?`
-            )
-            if (!permitirSinStock) return
+            setProductosSinStockPendientes(productosSinStock)
+            return
         }
 
+        await confirmarVenta()
+    }
+
+    async function confirmarVenta() {
+        setProductosSinStockPendientes([])
         const { error } = await supabase.rpc('registrar_venta_fifo', {
             p_id_cliente: clienteSeleccionado.idCliente,
-            p_permitir_sin_stock: permitirSinStock,
+            p_permitir_sin_stock: true,
             p_renglones: renglones.map(renglon => ({
                 idProducto: renglon.producto.idProducto,
                 cantidad: renglon.cantidad,
@@ -285,6 +287,22 @@ function CrearVenta() {
             </div>
 
             <button className="btn-finalizar" onClick={agregarVenta}>Finalizar Venta</button>
+
+            {productosSinStockPendientes.length > 0 && (
+                <div className="confirmacion-stock-fondo" role="presentation">
+                    <section className="confirmacion-stock" role="dialog" aria-modal="true" aria-labelledby="confirmacion-stock-titulo">
+                        <h3 id="confirmacion-stock-titulo">Producto sin stock</h3>
+                        <p>
+                            {productosSinStockPendientes.join(', ')} no tiene stock suficiente.
+                            ¿Deseás hacer la venta igual?
+                        </p>
+                        <div className="confirmacion-stock-acciones">
+                            <button type="button" className="btn btn-secondary" onClick={() => setProductosSinStockPendientes([])}>No</button>
+                            <button type="button" className="btn btn-primary" onClick={confirmarVenta}>Sí</button>
+                        </div>
+                    </section>
+                </div>
+            )}
         </div>
     )
 }

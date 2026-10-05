@@ -168,3 +168,32 @@
 
 .venta-total-previo span { color: var(--muted); font-size: 14px; }
 .venta-total-previo strong { color: var(--text); font-family: var(--mono); font-size: 20px; }
+
+.confirmacion-stock-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .58);
+}
+
+.confirmacion-stock {
+  width: min(100%, 400px);
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.confirmacion-stock h3 { margin: 0 0 10px; }
+.confirmacion-stock p { margin: 0; color: var(--muted); line-height: 1.5; }
+
+.confirmacion-stock-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
