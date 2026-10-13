@@ -18,7 +18,6 @@ function CrearVenta() {
     const [cantidad, setCantidad] = useState('')
     const [renglones, setRenglones] = useState([])
     const [indiceEnEdicion, setIndiceEnEdicion] = useState(null)
-    const [productosSinStockPendientes, setProductosSinStockPendientes] = useState([])
     const buscadorRef = useRef(null)
 
     function normalizarNombreParaOrden(nombre) {
@@ -152,29 +151,10 @@ function CrearVenta() {
         if (!clienteSeleccionado) return alert("Seleccioná un cliente")
         if (renglones.length === 0) return alert("Agregá al menos un producto")
 
-        const cantidadesPorProducto = renglones.reduce((cantidades, renglon) => {
-            const idProducto = renglon.producto.idProducto
-            cantidades.set(idProducto, (cantidades.get(idProducto) ?? 0) + renglon.cantidad)
-            return cantidades
-        }, new Map())
-
-        const productosSinStock = [...cantidadesPorProducto.entries()]
-            .filter(([idProducto, cantidadSolicitada]) => {
-                const producto = productos.find(item => item.idProducto === idProducto)
-                return cantidadSolicitada > Number(producto?.Stock ?? 0)
-            })
-            .map(([idProducto]) => productos.find(item => item.idProducto === idProducto)?.Nombre ?? 'un producto')
-
-        if (productosSinStock.length > 0) {
-            setProductosSinStockPendientes(productosSinStock)
-            return
-        }
-
         await confirmarVenta()
     }
 
     async function confirmarVenta() {
-        setProductosSinStockPendientes([])
         const { error } = await supabase.rpc('registrar_venta_fifo', {
             p_id_cliente: clienteSeleccionado.idCliente,
             p_permitir_sin_stock: true,
@@ -288,21 +268,6 @@ function CrearVenta() {
 
             <button className="btn-finalizar" onClick={agregarVenta}>Finalizar Venta</button>
 
-            {productosSinStockPendientes.length > 0 && (
-                <div className="confirmacion-stock-fondo" role="presentation">
-                    <section className="confirmacion-stock" role="dialog" aria-modal="true" aria-labelledby="confirmacion-stock-titulo">
-                        <h3 id="confirmacion-stock-titulo">Producto sin stock</h3>
-                        <p>
-                            {productosSinStockPendientes.join(', ')} no tiene stock suficiente.
-                            ¿Deseás hacer la venta igual?
-                        </p>
-                        <div className="confirmacion-stock-acciones">
-                            <button type="button" className="btn btn-secondary" onClick={() => setProductosSinStockPendientes([])}>No</button>
-                            <button type="button" className="btn btn-primary" onClick={confirmarVenta}>Sí</button>
-                        </div>
-                    </section>
-                </div>
-            )}
         </div>
     )
 }
