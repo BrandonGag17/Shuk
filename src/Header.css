@@ -50,6 +50,7 @@
 
 .nav-link:hover { background: #e5f3ff; color: #082955; }
 .nav-link-active { background: #d8ebff; color: #0b559f; font-weight: 600; }
+.nav-resumen-stock { border: 0; background: transparent; cursor: pointer; font-family: inherit; }
 
 .nav-account { align-items: center; display: flex; gap: 10px; justify-content: flex-end; min-width: 0; }
 .nav-user { color: #395779; font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

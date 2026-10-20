@@ -1,0 +1,52 @@
+.resumen-general-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 60%);
+}
+
+.resumen-general-modal {
+  width: min(100%, 760px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 35%);
+}
+
+.resumen-general-encabezado { display: flex; justify-content: space-between; gap: 20px; }
+.resumen-general-encabezado h2 { margin: 0 0 4px; }
+.resumen-general-encabezado p, .resumen-general-estado { color: var(--muted); }
+.resumen-general-cerrar { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 28px; line-height: 1; }
+.resumen-general-error { margin-top: 20px; color: var(--danger); }
+.resumen-general-filtros-fecha { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+.resumen-general-filtros-fecha label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 12px; }
+.resumen-general-productos { margin-bottom: 20px; }
+.resumen-general-productos-titulo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.resumen-general-productos-titulo strong { font-size: 14px; }
+.resumen-general-productos-titulo div { display: flex; gap: 8px; }
+.resumen-general-productos-titulo button { padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--text); cursor: pointer; font: inherit; font-size: 12px; }
+.resumen-general-productos-titulo button:hover { border-color: var(--accent); color: var(--accent-hover); }
+.resumen-general-lista-productos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; max-height: 230px; margin-top: 10px; padding: 12px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+.resumen-general-lista-productos label { display: flex; align-items: center; gap: 8px; min-width: 0; cursor: pointer; }
+.resumen-general-lista-productos input { width: auto; flex: 0 0 auto; }
+.resumen-general-lista-productos span { overflow-wrap: anywhere; }
+.resumen-general-lista-productos p { color: var(--muted); }
+.resumen-general-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.resumen-general-datos > div { display: flex; justify-content: space-between; gap: 12px; padding: 12px; border-radius: 8px; background: var(--surface-raised); }
+.resumen-general-datos span { color: var(--muted); font-size: 13px; }
+.resumen-general-datos strong { text-align: right; }
+.resumen-general-datos .resumen-general-total { grid-column: 1 / -1; background: var(--accent); color: white; }
+.resumen-general-total span { color: inherit; }
+
+@media (max-width: 600px) {
+  .resumen-general-fondo { padding: 10px; }
+  .resumen-general-modal { max-height: calc(100vh - 20px); padding: 18px; }
+  .resumen-general-filtros-fecha, .resumen-general-datos, .resumen-general-lista-productos { grid-template-columns: 1fr; }
+}
