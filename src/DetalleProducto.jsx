@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import './DetalleProducto.css'
@@ -14,6 +14,31 @@ function DetalleProducto() {
     const [agregandoStock, setAgregandoStock] = useState(false)
     const [lotes, setLotes] = useState([])
     const [cargandoLotes, setCargandoLotes] = useState(true)
+    const [resumenAbierto, setResumenAbierto] = useState(false)
+    const [fechaDesde, setFechaDesde] = useState('')
+    const [fechaHasta, setFechaHasta] = useState('')
+
+    const resumenStock = useMemo(() => {
+        const lotesDelPeriodo = lotes.filter(lote => {
+            const fecha = String(lote.fechaIngreso ?? '').slice(0, 10)
+            return (!fechaDesde || fecha >= fechaDesde) && (!fechaHasta || fecha <= fechaHasta)
+        })
+
+        return lotesDelPeriodo.reduce((resumen, lote) => {
+            const cantidadInicial = Number(lote.CantidadInicial ?? 0)
+            const cantidadDisponible = Number(lote.CantidadDisponible ?? 0)
+            const precioCompra = Number(lote.PrecioCompra ?? 0)
+            return {
+                lotes: resumen.lotes + 1,
+                unidadesIngresadas: resumen.unidadesIngresadas + cantidadInicial,
+                unidadesDisponibles: resumen.unidadesDisponibles + cantidadDisponible,
+                valorIngresado: resumen.valorIngresado + cantidadInicial * precioCompra,
+                valorDisponible: resumen.valorDisponible + cantidadDisponible * precioCompra
+            }
+        }, { lotes: 0, unidadesIngresadas: 0, unidadesDisponibles: 0, valorIngresado: 0, valorDisponible: 0 })
+    }, [fechaDesde, fechaHasta, lotes])
+
+    const moneda = valor => Number(valor).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 })
 
     useEffect(() => {
         async function traerProducto() {
@@ -163,7 +188,12 @@ function DetalleProducto() {
 
                 <div className="campo-fila">
                     <span className="campo-label">Stock</span>
-                    <p className="campo-valor">{producto.Stock} unidades</p>
+                    <div className="stock-actual-acciones">
+                        <p className="campo-valor">{producto.Stock} unidades</p>
+                        <button className="btn btn-secondary btn-resumen-stock" type="button" onClick={() => setResumenAbierto(true)}>
+                            Resumen de stock
+                        </button>
+                    </div>
                 </div>
 
                 <section className="lotes-stock">
@@ -238,6 +268,35 @@ function DetalleProducto() {
                     </>
                 )}
             </div>
+
+            {resumenAbierto && (
+                <div className="resumen-stock-fondo" role="presentation" onMouseDown={() => setResumenAbierto(false)}>
+                    <section className="resumen-stock-modal" role="dialog" aria-modal="true" aria-labelledby="resumen-stock-titulo" onMouseDown={evento => evento.stopPropagation()}>
+                        <div className="resumen-stock-encabezado">
+                            <div>
+                                <h3 id="resumen-stock-titulo">Resumen de stock</h3>
+                                <p>{producto.Nombre}</p>
+                            </div>
+                            <button className="resumen-stock-cerrar" type="button" aria-label="Cerrar resumen" onClick={() => setResumenAbierto(false)}>×</button>
+                        </div>
+
+                        <div className="resumen-stock-filtros">
+                            <label>Desde<input type="date" value={fechaDesde} onChange={evento => setFechaDesde(evento.target.value)} /></label>
+                            <label>Hasta<input type="date" value={fechaHasta} onChange={evento => setFechaHasta(evento.target.value)} /></label>
+                        </div>
+
+                        <div className="resumen-stock-datos">
+                            <div><span>Lotes ingresados</span><strong>{resumenStock.lotes}</strong></div>
+                            <div><span>Unidades ingresadas</span><strong>{resumenStock.unidadesIngresadas}</strong></div>
+                            <div><span>Unidades disponibles</span><strong>{resumenStock.unidadesDisponibles}</strong></div>
+                            <div><span>Valor al ingresar</span><strong>{moneda(resumenStock.valorIngresado)}</strong></div>
+                            <div className="resumen-stock-total"><span>Valor del stock disponible</span><strong>{moneda(resumenStock.valorDisponible)}</strong></div>
+                        </div>
+
+                        <p className="resumen-stock-ayuda">Se incluyen los lotes cuya fecha de ingreso está dentro del período elegido. El valor disponible usa el costo de compra de las unidades que todavía quedan.</p>
+                    </section>
+                </div>
+            )}
 
         </div>
     )

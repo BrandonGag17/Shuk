@@ -45,6 +45,16 @@
   border-bottom: 1px solid var(--border);
 }
 
+.stock-actual-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stock-actual-acciones .campo-valor { flex: 1; }
+.btn-resumen-stock { white-space: nowrap; }
+
 .detalle-producto-acciones {
   display: flex;
   gap: 16px;
@@ -82,10 +92,49 @@
 .agregar-stock-campos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .agregar-stock-campos .btn { grid-column: 1 / -1; justify-content: center; }
 
+.resumen-stock-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 55%);
+}
+
+.resumen-stock-modal {
+  width: min(100%, 480px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 25%);
+}
+
+.resumen-stock-encabezado { display: flex; justify-content: space-between; gap: 16px; }
+.resumen-stock-encabezado h3 { margin: 0; }
+.resumen-stock-encabezado p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.resumen-stock-cerrar { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 28px; line-height: 1; }
+.resumen-stock-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0 16px; }
+.resumen-stock-filtros label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 12px; }
+.resumen-stock-filtros input { width: 100%; }
+.resumen-stock-datos { display: grid; gap: 8px; }
+.resumen-stock-datos > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px; border-radius: 8px; background: var(--surface-raised); }
+.resumen-stock-datos span { color: var(--muted); font-size: 14px; }
+.resumen-stock-datos strong { text-align: right; }
+.resumen-stock-datos .resumen-stock-total { background: var(--accent); color: white; }
+.resumen-stock-total span { color: inherit; }
+.resumen-stock-ayuda { margin: 16px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
 @media (max-width: 600px) {
   .agregar-stock-campos { grid-template-columns: 1fr; }
   .detalle-producto-acciones { flex-direction: column; }
   .detalle-producto-acciones .btn { justify-content: center; }
   .lote-stock { grid-template-columns: 30px 1fr; }
   .lote-stock span:nth-child(n + 3) { grid-column: 2; }
+  .stock-actual-acciones { align-items: flex-start; flex-direction: column; }
+  .resumen-stock-filtros { grid-template-columns: 1fr; }
 }
