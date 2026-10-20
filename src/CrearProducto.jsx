@@ -38,15 +38,33 @@ function CrearProducto() {
             return
         }
 
-        const { error } = await supabase
+        // El inventario se calcula a partir de lotes FIFO. Por eso las
+        // unidades iniciales se agregan después como el primer lote.
+        const { data: productoCreado, error } = await supabase
             .from('Productos')
-            .insert([producto])
-            .select()
+            .insert([{ ...producto, Stock: 0 }])
+            .select('idProducto')
+            .single()
 
         if (error) {
             setGuardando(false)
             alert("Error al crear producto")
             return
+        }
+
+        if (producto.Stock > 0) {
+            const { error: errorLote } = await supabase.rpc('agregar_lote_stock', {
+                p_id_producto: productoCreado.idProducto,
+                p_cantidad: producto.Stock,
+                p_precio_compra: producto.PrecioCompra,
+                p_precio_venta: producto.PrecioVenta
+            })
+
+            if (errorLote) {
+                setGuardando(false)
+                alert(`El producto fue creado, pero no se pudo cargar el stock inicial: ${errorLote.message}`)
+                return
+            }
         }
 
         alert("Producto creado ✅")
