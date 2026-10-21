@@ -198,6 +198,19 @@ function DetalleProducto() {
         alert('Lote actualizado')
     }
 
+    async function eliminarLote(lote) {
+        if (!window.confirm(`¿Eliminar el lote #${lotes.findIndex(actual => actual.idLote === lote.idLote) + 1}?`)) return
+
+        setGuardandoStock(true)
+        const { error } = await supabase.rpc('eliminar_lote_stock', { p_id_lote: lote.idLote })
+        setGuardandoStock(false)
+        if (error) return alert(error.message || 'No se pudo eliminar el lote')
+
+        await recargarInventario()
+        setLoteEnEdicion(null)
+        alert('Lote eliminado')
+    }
+
     if (!producto) return <p>Cargando...</p>
 
     return (
@@ -280,7 +293,10 @@ function DetalleProducto() {
                                         {loteEnEdicion?.idLote === lote.idLote ? <>
                                             <button className="btn btn-primary" type="button" onClick={guardarLote} disabled={guardandoStock}>{guardandoStock ? 'Guardando...' : 'Guardar'}</button>
                                             <button className="btn btn-secondary" type="button" onClick={() => setLoteEnEdicion(null)} disabled={guardandoStock}>Cancelar</button>
-                                        </> : <button className="btn btn-secondary btn-editar-lote" type="button" onClick={() => setLoteEnEdicion({ idLote: lote.idLote, cantidad: String(lote.CantidadDisponible), precioCompra: String(lote.PrecioCompra), precioVenta: String(lote.PrecioVenta) })}>Editar lote</button>}
+                                        </> : <>
+                                            <button className="btn btn-secondary btn-editar-lote" type="button" onClick={() => setLoteEnEdicion({ idLote: lote.idLote, cantidad: String(lote.CantidadDisponible), precioCompra: String(lote.PrecioCompra), precioVenta: String(lote.PrecioVenta) })}>Editar lote</button>
+                                            <button className="btn btn-danger btn-eliminar-lote" type="button" onClick={() => eliminarLote(lote)} disabled={guardandoStock}>Eliminar</button>
+                                        </>}
                                     </div>
                                 </div>
                             ))}
