@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import './DetalleProducto.css'
@@ -17,6 +17,10 @@ function DetalleProducto() {
     const [resumenAbierto, setResumenAbierto] = useState(false)
     const [fechaDesde, setFechaDesde] = useState('')
     const [fechaHasta, setFechaHasta] = useState('')
+    const [editandoStock, setEditandoStock] = useState(false)
+    const [stockEditado, setStockEditado] = useState('')
+    const [guardandoStock, setGuardandoStock] = useState(false)
+    const [loteEnEdicion, setLoteEnEdicion] = useState(null)
 
     const resumenStock = useMemo(() => {
         const lotesDelPeriodo = lotes.filter(lote => {
@@ -40,34 +44,36 @@ function DetalleProducto() {
 
     const moneda = valor => Number(valor).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 })
 
-    useEffect(() => {
-        async function traerProducto() {
-            const { data, error } = await supabase
-                .from('Productos')
-                .select('idProducto, Nombre, PrecioCompra, PrecioVenta, Stock, NombreProveedor, TipoProducto, ImagenUrl')
-                .eq('idProducto', id)
+    const recargarInventario = useCallback(async () => {
+        setCargandoLotes(true)
+        const { data, error } = await supabase
+            .from('Productos')
+            .select('idProducto, Nombre, PrecioCompra, PrecioVenta, Stock, NombreProveedor, TipoProducto, ImagenUrl')
+            .eq('idProducto', id)
 
-            if (error) {
-                console.log(error)
-                return
-            }
-
-            setProducto(data[0])
-            setForm(data[0])
-
-            const { data: lotesCargados, error: errorLotes } = await supabase
-                .from('LotesStock')
-                .select('idLote, CantidadInicial, CantidadDisponible, PrecioCompra, PrecioVenta, fechaIngreso')
-                .eq('idProducto', id)
-                .order('fechaIngreso', { ascending: true })
-                .order('idLote', { ascending: true })
-
-            if (!errorLotes) setLotes(lotesCargados)
+        if (error) {
+            console.log(error)
             setCargandoLotes(false)
+            return
         }
 
-        traerProducto()
+        setProducto(data[0])
+        setForm(data[0])
+
+        const { data: lotesCargados, error: errorLotes } = await supabase
+            .from('LotesStock')
+            .select('idLote, CantidadInicial, CantidadDisponible, PrecioCompra, PrecioVenta, fechaIngreso')
+            .eq('idProducto', id)
+            .order('fechaIngreso', { ascending: true })
+            .order('idLote', { ascending: true })
+
+        if (!errorLotes) setLotes(lotesCargados)
+        setCargandoLotes(false)
     }, [id])
+
+    useEffect(() => {
+        recargarInventario()
+    }, [recargarInventario])
 
     const convertirPrecio = (precio) => {
         // Reemplazar coma por punto para que Number() lo interprete correctamente
@@ -150,6 +156,48 @@ function DetalleProducto() {
         alert('Stock agregado')
     }
 
+    async function guardarStockActual() {
+        const cantidad = Number(stockEditado)
+        if (!Number.isInteger(cantidad) || cantidad < 0) {
+            return alert('Ingresá una cantidad entera igual o mayor a cero')
+        }
+
+        setGuardandoStock(true)
+        const { error } = await supabase.rpc('actualizar_stock_actual', {
+            p_id_producto: producto.idProducto,
+            p_stock: cantidad
+        })
+        setGuardandoStock(false)
+        if (error) return alert(error.message || 'No se pudo actualizar el stock')
+
+        await recargarInventario()
+        setEditandoStock(false)
+        alert('Stock actualizado')
+    }
+
+    async function guardarLote() {
+        const cantidad = Number(loteEnEdicion?.cantidad)
+        const precioCompra = convertirPrecio(loteEnEdicion?.precioCompra ?? '')
+        const precioVenta = convertirPrecio(loteEnEdicion?.precioVenta ?? '')
+        if (!Number.isInteger(cantidad) || cantidad < 0 || !Number.isFinite(precioCompra) || precioCompra < 0 || !Number.isFinite(precioVenta) || precioVenta < 0) {
+            return alert('Ingresá una cantidad entera y precios válidos, iguales o mayores a cero')
+        }
+
+        setGuardandoStock(true)
+        const { error } = await supabase.rpc('actualizar_lote_stock', {
+            p_id_lote: loteEnEdicion.idLote,
+            p_cantidad_disponible: cantidad,
+            p_precio_compra: precioCompra,
+            p_precio_venta: precioVenta
+        })
+        setGuardandoStock(false)
+        if (error) return alert(error.message || 'No se pudo actualizar el lote')
+
+        await recargarInventario()
+        setLoteEnEdicion(null)
+        alert('Lote actualizado')
+    }
+
     if (!producto) return <p>Cargando...</p>
 
     return (
@@ -189,7 +237,14 @@ function DetalleProducto() {
                 <div className="campo-fila">
                     <span className="campo-label">Stock</span>
                     <div className="stock-actual-acciones">
-                        <p className="campo-valor">{producto.Stock} unidades</p>
+                        {editandoStock ? (
+                            <div className="stock-edicion">
+                                <input aria-label="Stock actual" type="number" min="0" step="1" value={stockEditado} onChange={evento => setStockEditado(evento.target.value)} />
+                                <button className="btn btn-primary" type="button" onClick={guardarStockActual} disabled={guardandoStock}>{guardandoStock ? 'Guardando...' : 'Guardar'}</button>
+                                <button className="btn btn-secondary" type="button" onClick={() => setEditandoStock(false)} disabled={guardandoStock}>Cancelar</button>
+                            </div>
+                        ) : <p className="campo-valor">{producto.Stock} unidades</p>}
+                        {!editandoStock && <button className="btn btn-secondary" type="button" onClick={() => { setStockEditado(String(producto.Stock ?? 0)); setEditandoStock(true) }}>Editar stock</button>}
                         <button className="btn btn-secondary btn-resumen-stock" type="button" onClick={() => setResumenAbierto(true)}>
                             Resumen de stock
                         </button>
@@ -208,9 +263,25 @@ function DetalleProducto() {
                             {lotes.map((lote, indice) => (
                                 <div className="lote-stock" key={lote.idLote}>
                                     <span className="lote-orden">#{indice + 1}</span>
-                                    <span><strong>{lote.CantidadDisponible}</strong> de {lote.CantidadInicial} u.</span>
-                                    <span>Compra <strong>${Number(lote.PrecioCompra).toLocaleString('es-AR')}</strong></span>
-                                    <span>Venta <strong>${Number(lote.PrecioVenta).toLocaleString('es-AR')}</strong></span>
+                                    <div className="lote-stock-detalle">
+                                        {loteEnEdicion?.idLote === lote.idLote ? (
+                                            <div className="lote-edicion">
+                                                <label>Disponibles<input aria-label={`Unidades disponibles del lote ${indice + 1}`} type="number" min="0" step="1" value={loteEnEdicion.cantidad} onChange={evento => setLoteEnEdicion(actual => ({ ...actual, cantidad: evento.target.value }))} /></label>
+                                                <label>Compra<input aria-label={`Precio de compra del lote ${indice + 1}`} type="number" min="0" step="0.01" value={loteEnEdicion.precioCompra} onChange={evento => setLoteEnEdicion(actual => ({ ...actual, precioCompra: evento.target.value }))} /></label>
+                                                <label>Venta<input aria-label={`Precio de venta del lote ${indice + 1}`} type="number" min="0" step="0.01" value={loteEnEdicion.precioVenta} onChange={evento => setLoteEnEdicion(actual => ({ ...actual, precioVenta: evento.target.value }))} /></label>
+                                            </div>
+                                        ) : <>
+                                            <span><strong>{lote.CantidadDisponible}</strong> de {lote.CantidadInicial} u.</span>
+                                            <span>Compra <strong>${Number(lote.PrecioCompra).toLocaleString('es-AR')}</strong></span>
+                                            <span>Venta <strong>${Number(lote.PrecioVenta).toLocaleString('es-AR')}</strong></span>
+                                        </>}
+                                    </div>
+                                    <div className="lote-acciones">
+                                        {loteEnEdicion?.idLote === lote.idLote ? <>
+                                            <button className="btn btn-primary" type="button" onClick={guardarLote} disabled={guardandoStock}>{guardandoStock ? 'Guardando...' : 'Guardar'}</button>
+                                            <button className="btn btn-secondary" type="button" onClick={() => setLoteEnEdicion(null)} disabled={guardandoStock}>Cancelar</button>
+                                        </> : <button className="btn btn-secondary btn-editar-lote" type="button" onClick={() => setLoteEnEdicion({ idLote: lote.idLote, cantidad: String(lote.CantidadDisponible), precioCompra: String(lote.PrecioCompra), precioVenta: String(lote.PrecioVenta) })}>Editar lote</button>}
+                                    </div>
                                 </div>
                             ))}
                         </div>

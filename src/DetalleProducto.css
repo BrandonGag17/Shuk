@@ -54,6 +54,8 @@
 
 .stock-actual-acciones .campo-valor { flex: 1; }
 .btn-resumen-stock { white-space: nowrap; }
+.stock-edicion { display: flex; flex: 1; gap: 8px; align-items: center; }
+.stock-edicion input { width: 96px; }
 
 .detalle-producto-acciones {
   display: flex;
@@ -78,8 +80,14 @@
 
 .lotes-stock-vacio { color: var(--muted); font-size: 13px; padding: 10px 0 0; }
 .lotes-stock-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.lote-stock { display: grid; grid-template-columns: 34px 1fr 1fr 1fr; gap: 8px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; }
+.lote-stock { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; }
 .lote-orden { color: var(--accent-hover); font-family: var(--mono); }
+.lote-stock-detalle { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.btn-editar-lote { white-space: nowrap; }
+.lote-edicion { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lote-edicion label { display: flex; flex-direction: column; gap: 3px; color: var(--muted); font-size: 11px; }
+.lote-edicion input { min-width: 0; width: 100%; }
+.lote-acciones { display: flex; align-items: center; gap: 6px; }
 
 .agregar-stock {
   border-top: 1px solid var(--border);
@@ -134,7 +142,10 @@
   .detalle-producto-acciones { flex-direction: column; }
   .detalle-producto-acciones .btn { justify-content: center; }
   .lote-stock { grid-template-columns: 30px 1fr; }
-  .lote-stock span:nth-child(n + 3) { grid-column: 2; }
+  .lote-stock-detalle { grid-template-columns: 1fr; }
+  .lote-edicion { grid-template-columns: 1fr; }
+  .lote-acciones { grid-column: 2; flex-wrap: wrap; }
   .stock-actual-acciones { align-items: flex-start; flex-direction: column; }
+  .stock-edicion { flex-wrap: wrap; }
   .resumen-stock-filtros { grid-template-columns: 1fr; }
 }
