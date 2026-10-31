@@ -142,16 +142,7 @@ function DetalleProducto() {
         setAgregandoStock(false)
         if (error) return alert(error.message || 'No se pudo agregar el lote de stock')
 
-        setProducto(actual => ({ ...actual, Stock: Number(actual.Stock ?? 0) + cantidad, PrecioCompra: precioCompra, PrecioVenta: precioVenta }))
-        setForm(actual => ({ ...actual, Stock: Number(actual.Stock ?? 0) + cantidad, PrecioCompra: precioCompra, PrecioVenta: precioVenta }))
-        setLotes(actuales => [...actuales, {
-            idLote: `nuevo-${Date.now()}`,
-            CantidadInicial: cantidad,
-            CantidadDisponible: cantidad,
-            PrecioCompra: precioCompra,
-            PrecioVenta: precioVenta,
-            fechaIngreso: new Date().toISOString()
-        }])
+        await recargarInventario()
         setNuevoLote({ cantidad: '', precioCompra: '', precioVenta: '' })
         alert('Stock agregado')
     }
